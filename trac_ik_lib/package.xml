@@ -16,23 +16,21 @@
   <maintainer email="robotics@traclabs.com">TRACLabs Robotics</maintainer>
 
   <license>BSD</license>
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>amentc_cmake</buildtool_depend>
 
-  <build_depend>boost</build_depend>
-  <build_depend>cmake_modules</build_depend>
-  <build_depend>eigen</build_depend>
-  <build_depend>kdl_parser</build_depend>
-  <build_depend>libnlopt-dev</build_depend>
-  <build_depend condition="$ROS_DISTRO == noetic">libnlopt-cxx-dev</build_depend>
-  <build_depend>pkg-config</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>urdf</build_depend>
-  <build_export_depend condition="$ROS_DISTRO == noetic">libnlopt-cxx-dev</build_export_depend>
+  <depend>roscpp</depend>
 
-  <exec_depend>boost</exec_depend>
-  <exec_depend>kdl_parser</exec_depend>
-  <exec_depend>libnlopt-dev</exec_depend>
-  <exec_depend>libnlopt0</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>urdf</exec_depend>
+  
+  <depend>boost</depend>
+  <depend>eigen</depend>
+  <depend>kdl_parser</depend>
+  <depend>libnlopt-dev</depend>
+  <depend>libnlopt-cxx-dev</depend>
+  <depend>pkg-config</depend>
+  <depend>urdf</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+  
 </package>

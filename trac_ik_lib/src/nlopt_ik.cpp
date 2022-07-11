@@ -29,7 +29,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************************/
 
 #include <trac_ik/nlopt_ik.hpp>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <limits>
 #include <boost/date_time.hpp>
 #include <trac_ik/dual_quaternion.h>
@@ -64,7 +64,7 @@ double minfuncDQ(const std::vector<double>& x, std::vector<double>& grad, void* 
 
   std::vector<double> vals(x);
 
-  double jump = boost::math::tools::epsilon<float>();
+  double jump = FLT_EPSILON;
   double result[1];
   c->cartDQError(vals, result);
 
@@ -98,7 +98,7 @@ double minfuncSumSquared(const std::vector<double>& x, std::vector<double>& grad
 
   std::vector<double> vals(x);
 
-  double jump = boost::math::tools::epsilon<float>();
+  double jump = FLT_EPSILON;
   double result[1];
   c->cartSumSquaredError(vals, result);
 
@@ -132,7 +132,7 @@ double minfuncL2(const std::vector<double>& x, std::vector<double>& grad, void* 
 
   std::vector<double> vals(x);
 
-  double jump = boost::math::tools::epsilon<float>();
+  double jump = FLT_EPSILON;
   double result[1];
   c->cartL2NormError(vals, result);
 
@@ -171,7 +171,7 @@ void constrainfuncm(uint m, double* result, uint n, const double* x, double* gra
     vals[i] = x[i];
   }
 
-  double jump = boost::math::tools::epsilon<float>();
+  double jump = FLT_EPSILON;
 
   c->cartSumSquaredError(vals, result);
 
@@ -193,8 +193,8 @@ void constrainfuncm(uint m, double* result, uint n, const double* x, double* gra
 }
 
 
-NLOPT_IK::NLOPT_IK(const KDL::Chain& _chain, const KDL::JntArray& _q_min, const KDL::JntArray& _q_max, double _maxtime, double _eps, OptType _type):
-  chain(_chain), fksolver(chain), maxtime(_maxtime), eps(std::abs(_eps)), TYPE(_type)
+NLOPT_IK::NLOPT_IK(rclcpp::Node::SharedPtr nh, const KDL::Chain& _chain, const KDL::JntArray& _q_min, const KDL::JntArray& _q_max, double _maxtime, double _eps, OptType _type):
+  nh_(nh), chain(_chain), fksolver(chain), maxtime(_maxtime), eps(std::abs(_eps)), TYPE(_type)
 {
   assert(chain.getNrOfJoints() == _q_min.data.size());
   assert(chain.getNrOfJoints() == _q_max.data.size());
@@ -206,7 +206,8 @@ NLOPT_IK::NLOPT_IK(const KDL::Chain& _chain, const KDL::JntArray& _q_min, const 
 
   if (chain.getNrOfJoints() < 2)
   {
-    ROS_WARN_THROTTLE(1.0, "NLOpt_IK can only be run for chains of length 2 or more");
+    auto steady_clock = rclcpp::Clock();
+    RCLCPP_WARN_THROTTLE(nh_->get_logger(), steady_clock, 1000.0, "NLOpt_IK can only be run for chains of length 2 or more");
     return;
   }
   opt = nlopt::opt(nlopt::LD_SLSQP, _chain.getNrOfJoints());
@@ -234,7 +235,7 @@ NLOPT_IK::NLOPT_IK(const KDL::Chain& _chain, const KDL::JntArray& _q_min, const 
 
   assert(types.size() == lb.size());
 
-  std::vector<double> tolerance(1, boost::math::tools::epsilon<float>());
+  std::vector<double> tolerance(1, FLT_EPSILON);
   opt.set_xtol_abs(tolerance[0]);
 
 
@@ -300,11 +301,11 @@ void NLOPT_IK::cartSumSquaredError(const std::vector<double>& x, double error[])
   int rc = fksolver.JntToCart(q, currentPose);
 
   if (rc < 0)
-    ROS_FATAL_STREAM("KDL FKSolver is failing: " << q.data);
+    RCLCPP_FATAL_STREAM(nh_->get_logger(), "KDL FKSolver is failing: " << q.data);
 
   if (std::isnan(currentPose.p.x()))
   {
-    ROS_ERROR("NaNs from NLOpt!!");
+    RCLCPP_ERROR(nh_->get_logger(), "NaNs from NLOpt!!");
     error[0] = std::numeric_limits<float>::max();
     progress = -1;
     return;
@@ -351,12 +352,12 @@ void NLOPT_IK::cartL2NormError(const std::vector<double>& x, double error[])
   int rc = fksolver.JntToCart(q, currentPose);
 
   if (rc < 0)
-    ROS_FATAL_STREAM("KDL FKSolver is failing: " << q.data);
+    RCLCPP_FATAL_STREAM(nh_->get_logger(), "KDL FKSolver is failing: " << q.data);
 
 
   if (std::isnan(currentPose.p.x()))
   {
-    ROS_ERROR("NaNs from NLOpt!!");
+    RCLCPP_ERROR(nh_->get_logger(), "NaNs from NLOpt!!");
     error[0] = std::numeric_limits<float>::max();
     progress = -1;
     return;
@@ -404,12 +405,12 @@ void NLOPT_IK::cartDQError(const std::vector<double>& x, double error[])
   int rc = fksolver.JntToCart(q, currentPose);
 
   if (rc < 0)
-    ROS_FATAL_STREAM("KDL FKSolver is failing: " << q.data);
+    RCLCPP_FATAL_STREAM(nh_->get_logger(), "KDL FKSolver is failing: " << q.data);
 
 
   if (std::isnan(currentPose.p.x()))
   {
-    ROS_ERROR("NaNs from NLOpt!!");
+    RCLCPP_ERROR(nh_->get_logger(), "NaNs from NLOpt!!");
     error[0] = std::numeric_limits<float>::max();
     progress = -1;
     return;
@@ -458,16 +459,17 @@ int NLOPT_IK::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame &p_in, KDL
 
   bounds = _bounds;
   q_out = q_init;
-
+  auto steady_clock = rclcpp::Clock();
+  
   if (chain.getNrOfJoints() < 2)
   {
-    ROS_ERROR_THROTTLE(1.0, "NLOpt_IK can only be run for chains of length 2 or more");
+    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), steady_clock, 1000.0, "NLOpt_IK can only be run for chains of length 2 or more");
     return -3;
   }
 
   if (q_init.data.size() != types.size())
   {
-    ROS_ERROR_THROTTLE(1.0, "IK seeded with wrong number of joints.  Expected %d but got %d", (int)types.size(), (int)q_init.data.size());
+    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), steady_clock, 1000.0, "IK seeded with wrong number of joints.  Expected %d but got %d", (int)types.size(), (int)q_init.data.size());
     return -3;
   }
 
