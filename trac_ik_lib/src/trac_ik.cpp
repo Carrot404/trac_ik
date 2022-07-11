@@ -51,7 +51,11 @@ namespace TRAC_IK
   urdf::Model robot_model;
   std::string xml_string;
 
-  xml_string = nh_->declare_parameter(URDF_param, std::string(""));
+  if(!nh_->has_parameter(URDF_param))
+    xml_string = nh_->declare_parameter(URDF_param, std::string(""));
+  else
+    nh_->get_parameter(URDF_param, xml_string);
+  
   if(xml_string.empty())
   {
     RCLCPP_FATAL(nh_->get_logger(), "Could not load the xml from parameter: %s", URDF_param.c_str());
