@@ -16,9 +16,9 @@
   <maintainer email="robotics@traclabs.com">TRACLabs Robotics</maintainer>
 
   <license>BSD</license>
-  <buildtool_depend>amentc_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>roscpp</depend>
+  <depend>rclcpp</depend>
 
   
   <depend>boost</depend>
