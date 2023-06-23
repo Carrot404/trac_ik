@@ -12,8 +12,6 @@ find_package(kdl_parser REQUIRED)
 find_package(urdf REQUIRED)
 
 find_package(NLopt REQUIRED)
-# Finds Boost Components
-include(ConfigExtras.cmake)
 
 find_package(PkgConfig)
 pkg_check_modules(Eigen REQUIRED eigen3)
@@ -25,13 +23,12 @@ set(DEPS
   urdf
   kdl_parser
   NLopt
-  Boost
   )
 
 
 
 add_library(trac_ik SHARED src/kdl_tl.cpp src/nlopt_ik.cpp src/trac_ik.cpp)
-target_link_libraries(trac_ik ${pkg_nlopt_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(trac_ik ${pkg_nlopt_LIBRARIES})
 target_include_directories(trac_ik PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
@@ -69,4 +66,4 @@ ament_export_include_directories(
 )
 
 
-ament_package(CONFIG_EXTRAS ConfigExtras.cmake)
+ament_package()

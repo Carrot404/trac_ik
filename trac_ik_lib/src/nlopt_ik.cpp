@@ -31,9 +31,9 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <trac_ik/nlopt_ik.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <limits>
-#include <boost/date_time.hpp>
 #include <trac_ik/dual_quaternion.h>
 #include <cmath>
+#include <cfloat>
 
 
 
@@ -206,8 +206,7 @@ NLOPT_IK::NLOPT_IK(rclcpp::Node::SharedPtr nh, const KDL::Chain& _chain, const K
 
   if (chain.getNrOfJoints() < 2)
   {
-    auto steady_clock = rclcpp::Clock();
-    RCLCPP_WARN_THROTTLE(nh_->get_logger(), steady_clock, 1000.0, "NLOpt_IK can only be run for chains of length 2 or more");
+    RCLCPP_WARN_THROTTLE(nh_->get_logger(), system_clock, 1000.0, "NLOpt_IK can only be run for chains of length 2 or more");
     return;
   }
   opt = nlopt::opt(nlopt::LD_SLSQP, _chain.getNrOfJoints());
@@ -454,22 +453,20 @@ int NLOPT_IK::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame &p_in, KDL
   // Returns -3 if a configuration could not be found within the eps
   // set up in the constructor.
 
-  boost::posix_time::ptime start_time = boost::posix_time::microsec_clock::local_time();
-  boost::posix_time::time_duration diff;
+  auto start_time = system_clock.now();
 
   bounds = _bounds;
   q_out = q_init;
-  auto steady_clock = rclcpp::Clock();
   
   if (chain.getNrOfJoints() < 2)
   {
-    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), steady_clock, 1000.0, "NLOpt_IK can only be run for chains of length 2 or more");
+    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), system_clock, 1000.0, "NLOpt_IK can only be run for chains of length 2 or more");
     return -3;
   }
 
   if (q_init.data.size() != types.size())
   {
-    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), steady_clock, 1000.0, "IK seeded with wrong number of joints.  Expected %d but got %d", (int)types.size(), (int)q_init.data.size());
+    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), system_clock, 1000.0, "IK seeded with wrong number of joints.  Expected %d but got %d", (int)types.size(), (int)q_init.data.size());
     return -3;
   }
 
@@ -590,9 +587,8 @@ int NLOPT_IK::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame &p_in, KDL
   if (!aborted && progress < 0)
   {
 
-    double time_left;
-    diff = boost::posix_time::microsec_clock::local_time() - start_time;
-    time_left = maxtime - diff.total_nanoseconds() / 1000000000.0;
+    auto diff = system_clock.now() - start_time;
+    auto time_left = maxtime - diff.nanoseconds() / 1000000000.0;
 
     while (time_left > 0 && !aborted && progress < 0)
     {
@@ -611,8 +607,8 @@ int NLOPT_IK::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame &p_in, KDL
       if (progress == -1) // Got NaNs
         progress = -3;
 
-      diff = boost::posix_time::microsec_clock::local_time() - start_time;
-      time_left = maxtime - diff.total_nanoseconds() / 1000000000.0;
+      auto diff = system_clock.now() - start_time;
+      time_left = maxtime - diff.nanoseconds() / 1000000000.0;
     }
   }
 

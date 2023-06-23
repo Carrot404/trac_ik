@@ -19,8 +19,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  
-  <depend>boost</depend>
+
   <depend>eigen</depend>
   <depend>kdl_parser</depend>
   <depend>libnlopt-dev</depend>

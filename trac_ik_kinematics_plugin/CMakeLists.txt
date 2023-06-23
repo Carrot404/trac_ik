@@ -52,8 +52,6 @@ install(TARGETS ${TRAC_IK_PLUGIN_LIB} ${TRAC_IK_PARAM_LIB}
   RUNTIME DESTINATION bin
 )
 
-# prevent pluginlib from using boost
-#target_compile_definitions(${TRAC_IK_PLUGIN_LIB} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it. trac_ik_kinematics_plugin
 target_compile_definitions(${TRAC_IK_PLUGIN_LIB} PRIVATE "TRAC_IK_KINEMATICS_PLUGIN_BUILDING_DLL")

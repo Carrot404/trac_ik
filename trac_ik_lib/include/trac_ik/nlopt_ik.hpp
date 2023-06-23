@@ -75,6 +75,7 @@ private:
   }
 
   rclcpp::Node::SharedPtr nh_;
+  rclcpp::Clock system_clock;
 
   std::vector<double> lb;
   std::vector<double> ub;
