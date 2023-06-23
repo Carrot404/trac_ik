@@ -16,14 +16,14 @@
   <url type="website">http://wiki.ros.org/trac_ik</url>
   <url type="repository">https://bitbucket.org/traclabs/trac_ik</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <exec_depend>trac_ik_examples</exec_depend>
+  <!-- <exec_depend>trac_ik_examples</exec_depend> -->  <!-- Enable after porting to ROS 2 -->
   <exec_depend>trac_ik_kinematics_plugin</exec_depend>
   <exec_depend>trac_ik_lib</exec_depend>
-  <exec_depend>trac_ik_python</exec_depend>
+  <!-- <exec_depend>trac_ik_python</exec_depend> -->  <!-- Enable after porting to ROS 2 -->
 
   <export>
-    <metapackage/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
