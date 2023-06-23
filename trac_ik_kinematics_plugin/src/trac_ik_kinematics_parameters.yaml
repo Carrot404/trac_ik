@@ -20,6 +20,6 @@ trac_ik_kinematics:
     description: "Solve Type. Options: Speed, Distance",
     validation: {
       not_empty<>: [],
-      one_of<>: [["Speed", "Distance"]]
+      one_of<>: [["Speed", "Distance", "Manipulation1", "Manipulation2"]]
     }
   }

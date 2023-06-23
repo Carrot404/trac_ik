@@ -13,8 +13,8 @@
   <depend>moveit_core</depend>
   <depend>pluginlib</depend>
   <depend>class_loader</depend>
-  <depend>urdf</depend>
   <depend>generate_parameter_library</depend>
+  <depend>urdf</depend>
   <depend>tf2_kdl</depend>
   <depend>trac_ik_lib</depend>
 

@@ -33,6 +33,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <moveit/kinematics_base/kinematics_base.h>
 #include <trac_ik_kinematics_parameters.hpp>
+#include <moveit/robot_model/robot_model.h>
 #include <kdl/chain.hpp>
 
 namespace trac_ik_kinematics_plugin

@@ -58,38 +58,22 @@ bool TRAC_IKKinematicsPlugin::initialize(const rclcpp::Node::SharedPtr &node,
 
   storeValues(robot_model, group_name, base_frame, tip_frames, search_discretization);
 
-  urdf::Model model;
-/*
-  std::string xml_string;
-
-  std::string urdf_xml, full_urdf_xml;
-  node_handle.param("urdf_xml", urdf_xml, robot_description);
-  node_handle.searchParam(urdf_xml, full_urdf_xml);
-
-  RCLCPP_DEBUG(LOGGER, "Reading xml file from parameter server");
-  if (!node_handle.getParam(full_urdf_xml, xml_string))
-  {
-    RCLCPP_FATAL(LOGGER, "Could not load the xml from parameter server: %s", urdf_xml.c_str());
-    return false;
-  }
-
-  node_handle.param(full_urdf_xml, xml_string, std::string());
-  robot_model.initString(xml_string);
-
-  RCLCPP_DEBUG_STREAM(LOGGER, "Reading joints and links from URDF");
-*/
   KDL::Tree tree;
-
-  if (!kdl_parser::treeFromUrdfModel(model, tree))
+  if (!kdl_parser::treeFromUrdfModel(*robot_model.getURDF(), tree))
   {
     RCLCPP_FATAL(LOGGER, "Failed to extract kdl tree from xml robot description");
     return false;
   }
 
-  std::string tip_name = tip_frames[0];
-  if (!tree.getChain(base_frame, tip_name, chain))
+  if (tip_frames.size() != 1)
   {
-    RCLCPP_FATAL(LOGGER, "Couldn't find chain %s to %s", base_frame.c_str(), tip_name.c_str());
+    RCLCPP_FATAL(LOGGER, "Tip frames has a size different than 1");
+    return false;
+  }
+
+  if (!tree.getChain(base_frame, tip_frames[0], chain))
+  {
+    RCLCPP_FATAL(LOGGER, "Couldn't find chain %s to %s", base_frame.c_str(), tip_frames[0].c_str());
     return false;
   }
 
@@ -109,7 +93,7 @@ bool TRAC_IKKinematicsPlugin::initialize(const rclcpp::Node::SharedPtr &node,
   {
 
     link_names_.push_back(chain_segs[i].getName());
-    joint = model.getJoint(chain_segs[i].getJoint().getName());
+    joint = robot_model_->getURDF()->getJoint(chain_segs[i].getJoint().getName());
     if (joint->type != urdf::Joint::UNKNOWN && joint->type != urdf::Joint::FIXED)
     {
       joint_num++;
@@ -356,8 +340,6 @@ bool TRAC_IKKinematicsPlugin::searchPositionIK(const geometry_msgs::msg::Pose &i
     bounds.rot.z(std::numeric_limits<float>::max());
   }
 
-  double epsilon = 1e-5;  //Same as MoveIt's KDL plugin
-
   TRAC_IK::SolveType solvetype;
 
   if (solve_type == "Manipulation1")
@@ -375,7 +357,7 @@ bool TRAC_IKKinematicsPlugin::searchPositionIK(const geometry_msgs::msg::Pose &i
     solvetype = TRAC_IK::Speed;
   }
 
-  TRAC_IK::TRAC_IK ik_solver(node_, chain, joint_min, joint_max, timeout, epsilon, solvetype);
+  TRAC_IK::TRAC_IK ik_solver(node_, chain, joint_min, joint_max, timeout, params_.epsilon, solvetype);
 
   int rc = ik_solver.CartToJnt(in, frame, out, bounds);
 
