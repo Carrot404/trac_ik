@@ -60,7 +60,7 @@ target_compile_definitions(${TRAC_IK_PLUGIN_LIB} PRIVATE "TRAC_IK_KINEMATICS_PLU
 
 pluginlib_export_plugin_description_file(moveit_core trac_ik_kinematics_description.xml)
 
-ament_export_libraries(${TRAC_IK_PLUGIN_NAME})
+ament_export_libraries(${TRAC_IK_PLUGIN_LIB})
 ament_export_targets( export_${PROJECT_NAME} )
 ament_export_dependencies( ${DEPS} )
 ament_export_include_directories(include)
