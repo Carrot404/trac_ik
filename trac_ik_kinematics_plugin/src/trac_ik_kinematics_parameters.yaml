@@ -16,10 +16,9 @@ trac_ik_kinematics:
 
   solve_type: {
     type: string,
-    default_value: "Speed",
-    description: "Solve Type. Options: Speed, Distance",
+    default_value: "Distance",
+    description: "Solve Type. Options: Speed, Distance, Manipulation1, Manipulation2",
     validation: {
-      not_empty<>: [],
       one_of<>: [["Speed", "Distance", "Manipulation1", "Manipulation2"]]
     }
   }

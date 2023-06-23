@@ -361,6 +361,18 @@ bool TRAC_IKKinematicsPlugin::searchPositionIK(const geometry_msgs::msg::Pose &i
 
   int rc = ik_solver.CartToJnt(in, frame, out, bounds);
 
+  // If you want to retrieve all the returned solutions, the (commented) code below does it
+  // Note that you have to call getSolutions() AFTER a successful code to CartToJnt to get all the solutions generated
+  // CartToJnt returns only one solution, but more could have been generated
+  // usually, Speed returns 1 solution.  The other modes return more
+  // rc is the number of solutions obtained
+  /*
+  if(rc > 0)
+  { 
+    std::vector<KDL::JntArray> sols;
+    bool res = ik_solver.getSolutions(sols);
+    RCLCPP_WARN(LOGGER, "Generated %u solutions, retrieved %lu solutions ", rc, sols.size());
+  }*/
 
   solution.resize(num_joints_);
 
