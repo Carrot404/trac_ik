@@ -184,7 +184,7 @@ int ChainIkSolverPos_TL::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame
     q_out = q_curr;
 
     auto timediff = system_clock.now() - start_time;
-    time_left = maxtime - timediff.nanoseconds() / 1000000000.0;
+    time_left = maxtime - timediff.seconds();
   }
   while (time_left > 0 && !aborted);
 

@@ -234,7 +234,7 @@ bool TRAC_IK::runSolver(T1& solver, T2& other_solver,
   while (true)
   {
     auto timediff = system_clock.now() - start_time;
-    auto time_left = fulltime - timediff.nanoseconds() / 1000000000.0;
+    auto time_left = fulltime - timediff.seconds();
 
     if (time_left <= 0)
       break;

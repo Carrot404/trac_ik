@@ -586,9 +586,8 @@ int NLOPT_IK::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame &p_in, KDL
 
   if (!aborted && progress < 0)
   {
-
     auto diff = system_clock.now() - start_time;
-    auto time_left = maxtime - diff.nanoseconds() / 1000000000.0;
+    auto time_left = maxtime - diff.seconds();
 
     while (time_left > 0 && !aborted && progress < 0)
     {
@@ -608,7 +607,7 @@ int NLOPT_IK::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame &p_in, KDL
         progress = -3;
 
       auto diff = system_clock.now() - start_time;
-      time_left = maxtime - diff.nanoseconds() / 1000000000.0;
+      time_left = maxtime - diff.seconds();
     }
   }
 
