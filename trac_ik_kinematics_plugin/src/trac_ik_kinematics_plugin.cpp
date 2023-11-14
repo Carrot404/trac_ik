@@ -37,6 +37,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <trac_ik/trac_ik.hpp>
 #include <trac_ik/trac_ik_kinematics_plugin.hpp>
 #include <limits>
+#include "trac_ik_kinematics_parameters.hpp"
 
 namespace trac_ik_kinematics_plugin
 {
@@ -54,7 +55,7 @@ bool TRAC_IKKinematicsPlugin::initialize(const rclcpp::Node::SharedPtr &node,
   // Get Solver Parameters
   std::string kinematics_param_prefix = "robot_description_kinematics." + group_name;
   param_listener_ = std::make_shared<trac_ik_kinematics::ParamListener>(node, kinematics_param_prefix);
-  params_ = param_listener_->get_params();
+  params_ = std::make_shared<trac_ik_kinematics::Params>(param_listener_->get_params());
 
   storeValues(robot_model, group_name, base_frame, tip_frames, search_discretization);
 
@@ -133,8 +134,8 @@ bool TRAC_IKKinematicsPlugin::initialize(const rclcpp::Node::SharedPtr &node,
     }
   }
 
-  position_ik_ = params_.position_only_ik;
-  solve_type = params_.solve_type;
+  position_ik_ = params_->position_only_ik;
+  solve_type = params_->solve_type;
   RCLCPP_INFO(LOGGER, "Using solve type %s", solve_type.c_str());
 
   active_ = true;
@@ -357,7 +358,7 @@ bool TRAC_IKKinematicsPlugin::searchPositionIK(const geometry_msgs::msg::Pose &i
     solvetype = TRAC_IK::Speed;
   }
 
-  TRAC_IK::TRAC_IK ik_solver(node_, chain, joint_min, joint_max, timeout, params_.epsilon, solvetype);
+  TRAC_IK::TRAC_IK ik_solver(node_, chain, joint_min, joint_max, timeout, params_->epsilon, solvetype);
 
   int rc = ik_solver.CartToJnt(in, frame, out, bounds);
 
@@ -368,7 +369,7 @@ bool TRAC_IKKinematicsPlugin::searchPositionIK(const geometry_msgs::msg::Pose &i
   // rc is the number of solutions obtained
   /*
   if(rc > 0)
-  { 
+  {
     std::vector<KDL::JntArray> sols;
     bool res = ik_solver.getSolutions(sols);
     RCLCPP_WARN(LOGGER, "Generated %u solutions, retrieved %lu solutions ", rc, sols.size());

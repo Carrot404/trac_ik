@@ -32,9 +32,15 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TRAC_IK_KINEMATICS_PLUGIN_
 
 #include <moveit/kinematics_base/kinematics_base.h>
-#include <trac_ik_kinematics_parameters.hpp>
 #include <moveit/robot_model/robot_model.h>
 #include <kdl/chain.hpp>
+#include <kdl/jntarray.hpp>
+
+// Forward declaration
+namespace trac_ik_kinematics {
+  class ParamListener;
+  class Params;
+}
 
 namespace trac_ik_kinematics_plugin
 {
@@ -170,7 +176,7 @@ public:
                      std::vector<geometry_msgs::msg::Pose> &poses) const override;
 
 
-  bool initialize(const rclcpp::Node::SharedPtr &node, 
+  bool initialize(const rclcpp::Node::SharedPtr &node,
                   const moveit::core::RobotModel& robot_model,
                   const std::string& group_name,
                   const std::string& base_frame,
@@ -195,7 +201,7 @@ private:
   std::string solve_type;
 
   std::shared_ptr<trac_ik_kinematics::ParamListener> param_listener_;
-  trac_ik_kinematics::Params params_;
+  std::shared_ptr<trac_ik_kinematics::Params> params_;
 
 }; // end class
 }
