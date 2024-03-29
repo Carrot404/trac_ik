@@ -2,8 +2,8 @@
 Changelog for package trac_ik_kinematics_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2024-03-29)
+------------------
 * hide parameters header file, as it is implemetation
 * remove boost from trac_ik_lib and trac_ik_kinematics_plugin
 * Set default solve type to Distance

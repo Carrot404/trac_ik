@@ -2,8 +2,8 @@
 Changelog for package trac_ik_lib
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2024-03-29)
+------------------
 * change nanoseconds() to seconds()
 * remove boost from trac_ik_lib and trac_ik_kinematics_plugin
 * Added support for C++17
