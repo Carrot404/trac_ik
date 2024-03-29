@@ -1,3 +1,8 @@
+Forthcoming
+-----------
+* Update CMakeLists for trac_ik
+* Contributors: Ana C. Huaman Quispe, Kenji Brameld, Mike Lanighan
+
 1.6.6 (2021-05-05)
 ------------------
 

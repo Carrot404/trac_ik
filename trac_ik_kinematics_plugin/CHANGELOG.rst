@@ -2,6 +2,13 @@
 Changelog for package trac_ik_kinematics_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* hide parameters header file, as it is implemetation
+* remove boost from trac_ik_lib and trac_ik_kinematics_plugin
+* Set default solve type to Distance
+* Contributors: Ana C. Huaman Quispe, Kenji Brameld
+
 1.6.6 (2021-05-05)
 ------------------
 * removed bad depends
