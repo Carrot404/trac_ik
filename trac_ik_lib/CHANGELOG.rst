@@ -2,8 +2,8 @@
 Changelog for package trac_ik_lib
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.1 (2024-04-12)
+------------------
 * Add missing geometry_msgs dependency in package.xml
 * Contributors: Kenji Brameld
 
