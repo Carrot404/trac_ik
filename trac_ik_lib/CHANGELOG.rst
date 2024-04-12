@@ -2,6 +2,11 @@
 Changelog for package trac_ik_lib
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing geometry_msgs dependency in package.xml
+* Contributors: Kenji Brameld
+
 2.0.0 (2024-03-29)
 ------------------
 * change nanoseconds() to seconds()
