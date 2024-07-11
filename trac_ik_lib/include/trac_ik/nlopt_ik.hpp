@@ -32,6 +32,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NLOPT_IK_HPP
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <trac_ik/kdl_tl.hpp>
 #include <nlopt.hpp>
 
@@ -46,7 +47,7 @@ class NLOPT_IK
 {
   friend class TRAC_IK::TRAC_IK;
 public:
-  NLOPT_IK(rclcpp::Node::SharedPtr nh, const KDL::Chain& chain, const KDL::JntArray& q_min, const KDL::JntArray& q_max, double maxtime = 0.005, double eps = 1e-3, OptType type = SumSq);
+  NLOPT_IK(const KDL::Chain& chain, const KDL::JntArray& q_min, const KDL::JntArray& q_max, double maxtime = 0.005, double eps = 1e-3, OptType type = SumSq);
 
   ~NLOPT_IK() {};
   int CartToJnt(const KDL::JntArray& q_init, const KDL::Frame& p_in, KDL::JntArray& q_out, const KDL::Twist bounds = KDL::Twist::Zero(), const KDL::JntArray& q_desired = KDL::JntArray());
@@ -74,7 +75,6 @@ private:
     aborted = false;
   }
 
-  rclcpp::Node::SharedPtr nh_;
   rclcpp::Clock system_clock;
 
   std::vector<double> lb;

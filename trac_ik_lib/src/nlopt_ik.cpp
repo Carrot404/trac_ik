@@ -35,7 +35,10 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 #include <cfloat>
 
-
+namespace
+{
+  static const rclcpp::Logger LOGGER = rclcpp::get_logger("trac_ik.NLOPT_IK");
+}
 
 namespace NLOPT_IK
 {
@@ -193,8 +196,8 @@ void constrainfuncm(uint m, double* result, uint n, const double* x, double* gra
 }
 
 
-NLOPT_IK::NLOPT_IK(rclcpp::Node::SharedPtr nh, const KDL::Chain& _chain, const KDL::JntArray& _q_min, const KDL::JntArray& _q_max, double _maxtime, double _eps, OptType _type):
-  nh_(nh), chain(_chain), fksolver(chain), maxtime(_maxtime), eps(std::abs(_eps)), TYPE(_type)
+NLOPT_IK::NLOPT_IK(const KDL::Chain& _chain, const KDL::JntArray& _q_min, const KDL::JntArray& _q_max, double _maxtime, double _eps, OptType _type):
+  chain(_chain), fksolver(chain), maxtime(_maxtime), eps(std::abs(_eps)), TYPE(_type)
 {
   assert(chain.getNrOfJoints() == _q_min.data.size());
   assert(chain.getNrOfJoints() == _q_max.data.size());
@@ -206,7 +209,7 @@ NLOPT_IK::NLOPT_IK(rclcpp::Node::SharedPtr nh, const KDL::Chain& _chain, const K
 
   if (chain.getNrOfJoints() < 2)
   {
-    RCLCPP_WARN_THROTTLE(nh_->get_logger(), system_clock, 1000.0, "NLOpt_IK can only be run for chains of length 2 or more");
+    RCLCPP_WARN_THROTTLE(LOGGER, system_clock, 1000.0, "NLOpt_IK can only be run for chains of length 2 or more");
     return;
   }
   opt = nlopt::opt(nlopt::LD_SLSQP, _chain.getNrOfJoints());
@@ -300,11 +303,11 @@ void NLOPT_IK::cartSumSquaredError(const std::vector<double>& x, double error[])
   int rc = fksolver.JntToCart(q, currentPose);
 
   if (rc < 0)
-    RCLCPP_FATAL_STREAM(nh_->get_logger(), "KDL FKSolver is failing: " << q.data);
+    RCLCPP_FATAL_STREAM(LOGGER, "KDL FKSolver is failing: " << q.data);
 
   if (std::isnan(currentPose.p.x()))
   {
-    RCLCPP_ERROR(nh_->get_logger(), "NaNs from NLOpt!!");
+    RCLCPP_ERROR(LOGGER, "NaNs from NLOpt!!");
     error[0] = std::numeric_limits<float>::max();
     progress = -1;
     return;
@@ -351,12 +354,12 @@ void NLOPT_IK::cartL2NormError(const std::vector<double>& x, double error[])
   int rc = fksolver.JntToCart(q, currentPose);
 
   if (rc < 0)
-    RCLCPP_FATAL_STREAM(nh_->get_logger(), "KDL FKSolver is failing: " << q.data);
+    RCLCPP_FATAL_STREAM(LOGGER, "KDL FKSolver is failing: " << q.data);
 
 
   if (std::isnan(currentPose.p.x()))
   {
-    RCLCPP_ERROR(nh_->get_logger(), "NaNs from NLOpt!!");
+    RCLCPP_ERROR(LOGGER, "NaNs from NLOpt!!");
     error[0] = std::numeric_limits<float>::max();
     progress = -1;
     return;
@@ -404,12 +407,12 @@ void NLOPT_IK::cartDQError(const std::vector<double>& x, double error[])
   int rc = fksolver.JntToCart(q, currentPose);
 
   if (rc < 0)
-    RCLCPP_FATAL_STREAM(nh_->get_logger(), "KDL FKSolver is failing: " << q.data);
+    RCLCPP_FATAL_STREAM(LOGGER, "KDL FKSolver is failing: " << q.data);
 
 
   if (std::isnan(currentPose.p.x()))
   {
-    RCLCPP_ERROR(nh_->get_logger(), "NaNs from NLOpt!!");
+    RCLCPP_ERROR(LOGGER, "NaNs from NLOpt!!");
     error[0] = std::numeric_limits<float>::max();
     progress = -1;
     return;
@@ -460,13 +463,13 @@ int NLOPT_IK::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame &p_in, KDL
   
   if (chain.getNrOfJoints() < 2)
   {
-    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), system_clock, 1000.0, "NLOpt_IK can only be run for chains of length 2 or more");
+    RCLCPP_ERROR_THROTTLE(LOGGER, system_clock, 1000.0, "NLOpt_IK can only be run for chains of length 2 or more");
     return -3;
   }
 
   if (q_init.data.size() != types.size())
   {
-    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), system_clock, 1000.0, "IK seeded with wrong number of joints.  Expected %d but got %d", (int)types.size(), (int)q_init.data.size());
+    RCLCPP_ERROR_THROTTLE(LOGGER, system_clock, 1000.0, "IK seeded with wrong number of joints.  Expected %d but got %d", (int)types.size(), (int)q_init.data.size());
     return -3;
   }
 

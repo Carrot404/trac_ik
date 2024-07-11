@@ -36,6 +36,11 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <kdl_parser/kdl_parser.hpp>
 #include <urdf/model.h>
 
+namespace
+{
+  static const rclcpp::Logger LOGGER = rclcpp::get_logger("trac_ik.TRAC_IK");
+}
+
 namespace TRAC_IK
 {
 
@@ -57,21 +62,21 @@ namespace TRAC_IK
   
   if(xml_string.empty())
   {
-    RCLCPP_FATAL(nh_->get_logger(), "Could not load the xml from parameter: %s", URDF_param.c_str());
+    RCLCPP_FATAL(LOGGER "Could not load the xml from parameter: %s", URDF_param.c_str());
     return;
   }
 
   robot_model.initString(xml_string);
 
-  RCLCPP_DEBUG_STREAM(nh_->get_logger(), "Reading joints and links from URDF");
+  RCLCPP_DEBUG_STREAM(LOGGER "Reading joints and links from URDF");
 
   KDL::Tree tree;
 
   if (!kdl_parser::treeFromUrdfModel(robot_model, tree))
-    RCLCPP_FATAL(nh_->get_logger(), "Failed to extract kdl tree from xml robot description");
+    RCLCPP_FATAL(LOGGER "Failed to extract kdl tree from xml robot description");
 
   if (!tree.getChain(base_link, tip_link, chain))
-    RCLCPP_FATAL(nh_->get_logger(), "Couldn't find chain %s to %s", base_link.c_str(), tip_link.c_str());
+    RCLCPP_FATAL(LOGGER "Couldn't find chain %s to %s", base_link.c_str(), tip_link.c_str());
 
   std::vector<KDL::Segment> chain_segs = chain.segments;
 
@@ -119,7 +124,7 @@ namespace TRAC_IK
         lb(joint_num - 1) = std::numeric_limits<float>::lowest();
         ub(joint_num - 1) = std::numeric_limits<float>::max();
       }
-      RCLCPP_DEBUG_STREAM(nh_->get_logger(), "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
+      RCLCPP_DEBUG_STREAM(LOGGER "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
     }
   }
 
@@ -140,6 +145,92 @@ namespace TRAC_IK
   initialize();
 }
 
+  TRAC_IK::TRAC_IK(const std::string& base_link, const std::string& tip_link, const std::string& URDF_param, double _maxtime, double _eps, SolveType _type) :
+  initialized(false),
+  eps(_eps),
+  maxtime(_maxtime),
+  solvetype(_type)
+{
+  urdf::Model robot_model;
+  if (!robot_model.initString(urdf_xml)) {
+    RCLCPP_FATAL(LOGGER, "Unable to initialize urdf::Model from robot description.");
+  }
+
+  RCLCPP_DEBUG(LOGGER, "Reading joints and links from URDF");
+
+  KDL::Tree tree;
+
+  if (!kdl_parser::treeFromUrdfModel(robot_model, tree))
+    RCLCPP_FATAL(LOGGER "Failed to extract kdl tree from xml robot description");
+
+  if (!tree.getChain(base_link, tip_link, chain))
+    RCLCPP_FATAL(LOGGER "Couldn't find chain %s to %s", base_link.c_str(), tip_link.c_str());
+
+  std::vector<KDL::Segment> chain_segs = chain.segments;
+
+  urdf::JointConstSharedPtr joint;
+
+  std::vector<double> l_bounds, u_bounds;
+
+  lb.resize(chain.getNrOfJoints());
+  ub.resize(chain.getNrOfJoints());
+
+  uint joint_num = 0;
+  for (unsigned int i = 0; i < chain_segs.size(); ++i)
+  {
+    joint = robot_model.getJoint(chain_segs[i].getJoint().getName());
+    if (joint->type != urdf::Joint::UNKNOWN && joint->type != urdf::Joint::FIXED)
+    {
+      joint_num++;
+      float lower, upper;
+      int hasLimits;
+      if (joint->type != urdf::Joint::CONTINUOUS)
+      {
+        if (joint->safety)
+        {
+          lower = std::max(joint->limits->lower, joint->safety->soft_lower_limit);
+          upper = std::min(joint->limits->upper, joint->safety->soft_upper_limit);
+        }
+        else
+        {
+          lower = joint->limits->lower;
+          upper = joint->limits->upper;
+        }
+        hasLimits = 1;
+      }
+      else
+      {
+        hasLimits = 0;
+      }
+      if (hasLimits)
+      {
+        lb(joint_num - 1) = lower;
+        ub(joint_num - 1) = upper;
+      }
+      else
+      {
+        lb(joint_num - 1) = std::numeric_limits<float>::lowest();
+        ub(joint_num - 1) = std::numeric_limits<float>::max();
+      }
+      RCLCPP_DEBUG_STREAM(LOGGER "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
+    }
+  }
+
+  initialize();
+}
+
+  TRAC_IK::TRAC_IK(const KDL::Chain& _chain, const KDL::JntArray& _q_min, const KDL::JntArray& _q_max, double _maxtime, double _eps, SolveType _type):
+  initialized(false),
+  chain(_chain),
+  lb(_q_min),
+  ub(_q_max),
+  eps(_eps),
+  maxtime(_maxtime),
+  solvetype(_type)
+{
+  initialize();
+}
+
 void TRAC_IK::initialize()
 {
 
@@ -147,7 +238,7 @@ void TRAC_IK::initialize()
   assert(chain.getNrOfJoints() == ub.data.size());
 
   jacsolver.reset(new KDL::ChainJntToJacSolver(chain));
-  nl_solver.reset(new NLOPT_IK::NLOPT_IK(nh_, chain, lb, ub, maxtime, eps, NLOPT_IK::SumSq));
+  nl_solver.reset(new NLOPT_IK::NLOPT_IK(chain, lb, ub, maxtime, eps, NLOPT_IK::SumSq));
   iksolver.reset(new KDL::ChainIkSolverPos_TL(chain, lb, ub, maxtime, eps, true, true));
 
   for (uint i = 0; i < chain.segments.size(); i++)
@@ -412,7 +503,7 @@ int TRAC_IK::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame &p_in, KDL:
 
   if (!initialized)
   {
-    RCLCPP_ERROR(nh_->get_logger(), "TRAC-IK was not properly initialized with a valid chain or limits.  IK cannot proceed");
+    RCLCPP_ERROR(LOGGER "TRAC-IK was not properly initialized with a valid chain or limits.  IK cannot proceed");
     return -1;
   }
 
