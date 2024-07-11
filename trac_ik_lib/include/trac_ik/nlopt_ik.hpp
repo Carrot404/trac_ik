@@ -32,7 +32,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NLOPT_IK_HPP
 
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <trac_ik/kdl_tl.hpp>
 #include <nlopt.hpp>
 

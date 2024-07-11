@@ -62,21 +62,21 @@ namespace TRAC_IK
   
   if(xml_string.empty())
   {
-    RCLCPP_FATAL(LOGGER "Could not load the xml from parameter: %s", URDF_param.c_str());
+    RCLCPP_FATAL(LOGGER, "Could not load the xml from parameter: %s", URDF_param.c_str());
     return;
   }
 
   robot_model.initString(xml_string);
 
-  RCLCPP_DEBUG_STREAM(LOGGER "Reading joints and links from URDF");
+  RCLCPP_DEBUG_STREAM(LOGGER, "Reading joints and links from URDF");
 
   KDL::Tree tree;
 
   if (!kdl_parser::treeFromUrdfModel(robot_model, tree))
-    RCLCPP_FATAL(LOGGER "Failed to extract kdl tree from xml robot description");
+    RCLCPP_FATAL(LOGGER, "Failed to extract kdl tree from xml robot description");
 
   if (!tree.getChain(base_link, tip_link, chain))
-    RCLCPP_FATAL(LOGGER "Couldn't find chain %s to %s", base_link.c_str(), tip_link.c_str());
+    RCLCPP_FATAL(LOGGER, "Couldn't find chain %s to %s", base_link.c_str(), tip_link.c_str());
 
   std::vector<KDL::Segment> chain_segs = chain.segments;
 
@@ -124,7 +124,7 @@ namespace TRAC_IK
         lb(joint_num - 1) = std::numeric_limits<float>::lowest();
         ub(joint_num - 1) = std::numeric_limits<float>::max();
       }
-      RCLCPP_DEBUG_STREAM(LOGGER "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
+      RCLCPP_DEBUG_STREAM(LOGGER, "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
     }
   }
 
@@ -145,7 +145,7 @@ namespace TRAC_IK
   initialize();
 }
 
-  TRAC_IK::TRAC_IK(const std::string& base_link, const std::string& tip_link, const std::string& URDF_param, double _maxtime, double _eps, SolveType _type) :
+  TRAC_IK::TRAC_IK(const std::string& base_link, const std::string& tip_link, const std::string& urdf_xml, double _maxtime, double _eps, SolveType _type) :
   initialized(false),
   eps(_eps),
   maxtime(_maxtime),
@@ -161,10 +161,10 @@ namespace TRAC_IK
   KDL::Tree tree;
 
   if (!kdl_parser::treeFromUrdfModel(robot_model, tree))
-    RCLCPP_FATAL(LOGGER "Failed to extract kdl tree from xml robot description");
+    RCLCPP_FATAL(LOGGER, "Failed to extract kdl tree from xml robot description");
 
   if (!tree.getChain(base_link, tip_link, chain))
-    RCLCPP_FATAL(LOGGER "Couldn't find chain %s to %s", base_link.c_str(), tip_link.c_str());
+    RCLCPP_FATAL(LOGGER, "Couldn't find chain %s to %s", base_link.c_str(), tip_link.c_str());
 
   std::vector<KDL::Segment> chain_segs = chain.segments;
 
@@ -212,7 +212,7 @@ namespace TRAC_IK
         lb(joint_num - 1) = std::numeric_limits<float>::lowest();
         ub(joint_num - 1) = std::numeric_limits<float>::max();
       }
-      RCLCPP_DEBUG_STREAM(LOGGER "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
+      RCLCPP_DEBUG_STREAM(LOGGER, "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
     }
   }
 
@@ -503,7 +503,7 @@ int TRAC_IK::CartToJnt(const KDL::JntArray &q_init, const KDL::Frame &p_in, KDL:
 
   if (!initialized)
   {
-    RCLCPP_ERROR(LOGGER "TRAC-IK was not properly initialized with a valid chain or limits.  IK cannot proceed");
+    RCLCPP_ERROR(LOGGER, "TRAC-IK was not properly initialized with a valid chain or limits.  IK cannot proceed");
     return -1;
   }
 
