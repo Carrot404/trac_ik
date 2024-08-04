@@ -86,6 +86,8 @@ namespace TRAC_IK
 
   lb.resize(chain.getNrOfJoints());
   ub.resize(chain.getNrOfJoints());
+  vel_lb.resize(chain.getNrOfJoints());
+  vel_ub.resize(chain.getNrOfJoints());
 
   uint joint_num = 0;
   for (unsigned int i = 0; i < chain_segs.size(); ++i)
@@ -94,25 +96,42 @@ namespace TRAC_IK
     if (joint->type != urdf::Joint::UNKNOWN && joint->type != urdf::Joint::FIXED)
     {
       joint_num++;
-      float lower, upper;
-      int hasLimits;
+      float lower, upper, vel_lower, vel_upper;
+      int hasLimits, hasVelLimits;
       if (joint->type != urdf::Joint::CONTINUOUS)
       {
         if (joint->safety)
         {
           lower = std::max(joint->limits->lower, joint->safety->soft_lower_limit);
           upper = std::min(joint->limits->upper, joint->safety->soft_upper_limit);
+          // Assuming safety limits for velocity, if not available use regular limits
+          vel_lower = joint->safety->k_velocity ? -joint->safety->k_velocity : -joint->limits->velocity;
+          vel_upper = joint->safety->k_velocity ? joint->safety->k_velocity : joint->limits->velocity;
         }
         else
         {
           lower = joint->limits->lower;
           upper = joint->limits->upper;
+          vel_lower = -joint->limits->velocity;
+          vel_upper = joint->limits->velocity;
         }
         hasLimits = 1;
+        hasVelLimits = 1;
       }
       else
       {
         hasLimits = 0;
+        // Continuous joints might still have velocity limits
+        if (joint->limits)
+        {
+          vel_lower = -joint->limits->velocity;
+          vel_upper = joint->limits->velocity;
+          hasVelLimits = 1;
+        }
+        else
+        {
+          hasVelLimits = 0;
+        }
       }
       if (hasLimits)
       {
@@ -124,7 +143,20 @@ namespace TRAC_IK
         lb(joint_num - 1) = std::numeric_limits<float>::lowest();
         ub(joint_num - 1) = std::numeric_limits<float>::max();
       }
-      RCLCPP_DEBUG_STREAM(LOGGER, "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
+      if (hasVelLimits)
+      {
+        vel_lb(joint_num - 1) = vel_lower;
+        vel_ub(joint_num - 1) = vel_upper;
+        has_vel_limits = true;
+      }
+      else
+      {
+        vel_lb(joint_num - 1) = -std::numeric_limits<float>::max();
+        vel_ub(joint_num - 1) = std::numeric_limits<float>::max();
+        has_vel_limits = false;
+      }
+      RCLCPP_DEBUG_STREAM(LOGGER, "IK Using joint " << joint->name << " pos: " << lb(joint_num - 1) << " " << ub(joint_num - 1)
+                                                                   << " vel: " << vel_lb(joint_num - 1) << " " << vel_ub(joint_num - 1));
     }
   }
 
@@ -174,6 +206,8 @@ namespace TRAC_IK
 
   lb.resize(chain.getNrOfJoints());
   ub.resize(chain.getNrOfJoints());
+  vel_lb.resize(chain.getNrOfJoints());
+  vel_ub.resize(chain.getNrOfJoints());
 
   uint joint_num = 0;
   for (unsigned int i = 0; i < chain_segs.size(); ++i)
@@ -182,25 +216,42 @@ namespace TRAC_IK
     if (joint->type != urdf::Joint::UNKNOWN && joint->type != urdf::Joint::FIXED)
     {
       joint_num++;
-      float lower, upper;
-      int hasLimits;
+      float lower, upper, vel_lower, vel_upper;
+      int hasLimits, hasVelLimits;
       if (joint->type != urdf::Joint::CONTINUOUS)
       {
         if (joint->safety)
         {
           lower = std::max(joint->limits->lower, joint->safety->soft_lower_limit);
           upper = std::min(joint->limits->upper, joint->safety->soft_upper_limit);
+          // Assuming safety limits for velocity, if not available use regular limits
+          vel_lower = joint->safety->k_velocity ? -joint->safety->k_velocity : -joint->limits->velocity;
+          vel_upper = joint->safety->k_velocity ? joint->safety->k_velocity : joint->limits->velocity;
         }
         else
         {
           lower = joint->limits->lower;
           upper = joint->limits->upper;
+          vel_lower = -joint->limits->velocity;
+          vel_upper = joint->limits->velocity;
         }
         hasLimits = 1;
+        hasVelLimits = 1;
       }
       else
       {
         hasLimits = 0;
+        // Continuous joints might still have velocity limits
+        if (joint->limits)
+        {
+          vel_lower = -joint->limits->velocity;
+          vel_upper = joint->limits->velocity;
+          hasVelLimits = 1;
+        }
+        else
+        {
+          hasVelLimits = 0;
+        }
       }
       if (hasLimits)
       {
@@ -212,7 +263,18 @@ namespace TRAC_IK
         lb(joint_num - 1) = std::numeric_limits<float>::lowest();
         ub(joint_num - 1) = std::numeric_limits<float>::max();
       }
-      RCLCPP_DEBUG_STREAM(LOGGER, "IK Using joint " << joint->name << " " << lb(joint_num - 1) << " " << ub(joint_num - 1));
+      if (hasVelLimits)
+      {
+        vel_lb(joint_num - 1) = vel_lower;
+        vel_ub(joint_num - 1) = vel_upper;
+      }
+      else
+      {
+        vel_lb(joint_num - 1) = -std::numeric_limits<float>::max();
+        vel_ub(joint_num - 1) = std::numeric_limits<float>::max();
+      }
+      RCLCPP_DEBUG_STREAM(LOGGER, "IK Using joint " << joint->name << " pos: " << lb(joint_num - 1) << " " << ub(joint_num - 1)
+                                                                   << " vel: " << vel_lb(joint_num - 1) << " " << vel_ub(joint_num - 1));
     }
   }
 

@@ -69,6 +69,24 @@ public:
     return initialized;
   }
 
+  bool getKDLVelLimits(KDL::JntArray& vel_lb_, KDL::JntArray& vel_ub_)
+  {
+    // check if has velocity limits
+    if (vel_lb.data.size() == 0 || vel_ub.data.size() == 0)
+    {
+      return false;
+    }
+    if (!has_vel_limits)
+    {
+      return false;
+    }
+
+    vel_lb_ = vel_lb;
+    vel_ub_ = vel_ub;
+
+    return true;
+  }
+
   // Requires a previous call to CartToJnt()
   bool getSolutions(std::vector<KDL::JntArray>& solutions_)
   {
@@ -114,6 +132,8 @@ private:
   bool initialized;
   KDL::Chain chain;
   KDL::JntArray lb, ub;
+  KDL::JntArray vel_lb, vel_ub;
+  bool has_vel_limits;
   std::unique_ptr<KDL::ChainJntToJacSolver> jacsolver;
   double eps;
   double maxtime;
