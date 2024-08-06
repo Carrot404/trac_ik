@@ -147,13 +147,11 @@ namespace TRAC_IK
       {
         vel_lb(joint_num - 1) = vel_lower;
         vel_ub(joint_num - 1) = vel_upper;
-        has_vel_limits = true;
       }
       else
       {
-        vel_lb(joint_num - 1) = -std::numeric_limits<float>::max();
+        vel_lb(joint_num - 1) = std::numeric_limits<float>::lowest();
         vel_ub(joint_num - 1) = std::numeric_limits<float>::max();
-        has_vel_limits = false;
       }
       RCLCPP_DEBUG_STREAM(LOGGER, "IK Using joint " << joint->name << " pos: " << lb(joint_num - 1) << " " << ub(joint_num - 1)
                                                                    << " vel: " << vel_lb(joint_num - 1) << " " << vel_ub(joint_num - 1));
@@ -270,7 +268,7 @@ namespace TRAC_IK
       }
       else
       {
-        vel_lb(joint_num - 1) = -std::numeric_limits<float>::max();
+        vel_lb(joint_num - 1) = std::numeric_limits<float>::lowest();
         vel_ub(joint_num - 1) = std::numeric_limits<float>::max();
       }
       RCLCPP_DEBUG_STREAM(LOGGER, "IK Using joint " << joint->name << " pos: " << lb(joint_num - 1) << " " << ub(joint_num - 1)

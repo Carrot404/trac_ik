@@ -76,9 +76,26 @@ public:
     {
       return false;
     }
-    if (!has_vel_limits)
+    // check if sizes of vel_lb and vel_ub are the same
+    if (vel_lb.data.size() != vel_ub.data.size())
     {
       return false;
+    }
+
+    // check every data in vel_lb and vel_ub is valid
+    for (size_t i = 0; i < vel_lb.data.size(); ++i)
+    {
+      // Check if lower bound is less than or equal to upper bound
+      if (vel_lb(i) > vel_ub(i))
+      {
+        return false;
+      }
+      
+      // Check if values
+      if (vel_lb(i) == std::numeric_limits<float>::lowest() || vel_ub(i) == std::numeric_limits<float>::max())
+      {
+        return false;
+      }
     }
 
     vel_lb_ = vel_lb;
@@ -133,7 +150,6 @@ private:
   KDL::Chain chain;
   KDL::JntArray lb, ub;
   KDL::JntArray vel_lb, vel_ub;
-  bool has_vel_limits;
   std::unique_ptr<KDL::ChainJntToJacSolver> jacsolver;
   double eps;
   double maxtime;
